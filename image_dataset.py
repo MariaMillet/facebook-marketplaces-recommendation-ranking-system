@@ -20,9 +20,11 @@ class ImageDataset(Dataset):
     
 
     def _get_file_list(self):
-        imgdir_path = pathlib.Path('images')
+        imgdir_path = pathlib.Path('cleaned_images')
         file_list = sorted([os.path.basename(str(path))[:-4] for path in imgdir_path.glob('*.jpg')])
         df = pd.read_csv("combined_df.csv", header=0, lineterminator='\n').sort_values(by='image_id')
+        print(df.head(2))
+        # print(pd.DataFrame(file_list, columns=['image_id']).head(1))
         df = pd.DataFrame(file_list, columns=['image_id']).merge(df, how='inner', on='image_id')       
         return file_list, df
 
@@ -33,7 +35,7 @@ class ImageDataset(Dataset):
         self.class_to_idx = {value: key for key, value in self.idx_to_class.items()}
 
     def __getitem__(self, index):
-        path = os.path.join('images/', str(self.file_list[index]) + ".jpg")
+        path = os.path.join('cleaned_images/', str(self.file_list[index]) + ".jpg")
         img = Image.open(path)
         if self.transform is not None:
             img = self.transform(img)
@@ -48,7 +50,8 @@ class ImageDataset(Dataset):
 image_dataset = ImageDataset(transform)
 # %%
 
-image_dataset[0][0].shape
+print(image_dataset[0][0].shape)
+image_dataset.df.head()
 # %%
 fig = plt.figure(figsize=(10,6))
 
@@ -64,3 +67,5 @@ for i, example in enumerate(image_dataset):
 plt.tight_layout()
 plt.show()
 
+
+# %%
