@@ -69,3 +69,56 @@ plt.show()
 
 
 # %%
+class CNNModel(torch.nn.Module()):
+    def __init__(self):
+        super().__init__()
+        #initial image = (3, 512, 512)
+        self.conv1 = torch.nn.Sequential(
+                     torch.nn.Conv2d(3, 32, kernel_size=3, padding=2),
+                     torch.nn.ReLU(),
+                     torch.nn.MaxPool2D(kernel_size=2),
+                     torch.nn.Dropout(p=0.5)
+        )
+        #image = (32, 256, 256)
+        self.conv2 = torch.nn.Sequential(
+                     torch.nn.Conv2d(32, 64, kernel_size=3, padding=2),
+                     torch.nn.ReLU(),
+                     torch.nn.MaxPool2D(kernel_size=2),
+                     torch.nn.Dropout(p=0.5)
+        )
+        #image = (64, 128, 128)
+        self.conv3 = torch.nn.Sequential(
+                     torch.nn.Conv2d(64, 128, kernel_size=3, padding=2),
+                     torch.nn.ReLU(),
+                     torch.nn.MaxPool2D(kernel_size=2),
+                     torch.nn.Dropout(p=0.5)
+        )
+        #image = (128, 64, 64)
+        self.conv4 = torch.nn.Sequential(
+                     torch.nn.Conv2d(128, 256, kernel_size=3, padding=2),
+                     torch.nn.ReLU(),
+                     torch.nn.MaxPool2D(kernel_size=2),
+                     torch.nn.Dropout(p=0.5)
+        )
+        #image = (256, 32, 32)
+        self.conv5 = torch.nn.Sequential(
+                     torch.nn.Conv2d(256, 512, kernel_size=3, padding=2),
+                     torch.nn.ReLU(),
+                     torch.nn.MaxPool2D(kernel_size=2),
+                     torch.nn.Dropout(p=0.5)
+        )
+        #image = (512, 16, 16)
+        self.av_pool = torch.nn.AvgPool2d(kernel_size=16)
+        # image = (512, 1, 1)
+        self.flatten = torch.nn.Flatten()
+        self.linear = torch.nn.Linear(512, 13)
+    
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.conv3(x)
+        x = self.conv4(x)
+        x = self.conv5(x)
+        x = self.av_pool(x)
+        x = self.flatten(x)
+        x = self.linear(x)
