@@ -23,7 +23,7 @@ class ImageDataset(Dataset):
         imgdir_path = pathlib.Path('cleaned_images')
         file_list = sorted([os.path.basename(str(path))[:-4] for path in imgdir_path.glob('*.jpg')])
         df = pd.read_csv("combined_df.csv", header=0, lineterminator='\n').sort_values(by='image_id')
-        print(df.head(2))
+        # print(df.head(2))
         # print(pd.DataFrame(file_list, columns=['image_id']).head(1))
         df = pd.DataFrame(file_list, columns=['image_id']).merge(df, how='inner', on='image_id')       
         return file_list, df
@@ -69,42 +69,42 @@ plt.show()
 
 
 # %%
-class CNNModel(torch.nn.Module()):
+class CNNModel(torch.nn.Module):
     def __init__(self):
         super().__init__()
         #initial image = (3, 512, 512)
         self.conv1 = torch.nn.Sequential(
                      torch.nn.Conv2d(3, 32, kernel_size=3, padding=2),
                      torch.nn.ReLU(),
-                     torch.nn.MaxPool2D(kernel_size=2),
+                     torch.nn.MaxPool2d(kernel_size=2),
                      torch.nn.Dropout(p=0.5)
         )
         #image = (32, 256, 256)
         self.conv2 = torch.nn.Sequential(
                      torch.nn.Conv2d(32, 64, kernel_size=3, padding=2),
                      torch.nn.ReLU(),
-                     torch.nn.MaxPool2D(kernel_size=2),
+                     torch.nn.MaxPool2d(kernel_size=2),
                      torch.nn.Dropout(p=0.5)
         )
         #image = (64, 128, 128)
         self.conv3 = torch.nn.Sequential(
                      torch.nn.Conv2d(64, 128, kernel_size=3, padding=2),
                      torch.nn.ReLU(),
-                     torch.nn.MaxPool2D(kernel_size=2),
+                     torch.nn.MaxPool2d(kernel_size=2),
                      torch.nn.Dropout(p=0.5)
         )
         #image = (128, 64, 64)
         self.conv4 = torch.nn.Sequential(
                      torch.nn.Conv2d(128, 256, kernel_size=3, padding=2),
                      torch.nn.ReLU(),
-                     torch.nn.MaxPool2D(kernel_size=2),
+                     torch.nn.MaxPool2d(kernel_size=2),
                      torch.nn.Dropout(p=0.5)
         )
         #image = (256, 32, 32)
         self.conv5 = torch.nn.Sequential(
                      torch.nn.Conv2d(256, 512, kernel_size=3, padding=2),
                      torch.nn.ReLU(),
-                     torch.nn.MaxPool2D(kernel_size=2),
+                     torch.nn.MaxPool2d(kernel_size=2),
                      torch.nn.Dropout(p=0.5)
         )
         #image = (512, 16, 16)
@@ -122,3 +122,42 @@ class CNNModel(torch.nn.Module()):
         x = self.av_pool(x)
         x = self.flatten(x)
         x = self.linear(x)
+        return x
+
+#%%
+model = CNNModel()
+# checking that the output is of a shape (batch_size, 13)
+dummy = torch.ones(size=(4,3,512,512))
+print(model(dummy).shape)
+# model
+#%%
+optimiser = torch.optim.Adam(model.parameters(), lr=0.001)
+loss_fn = torch.nn.BCELoss()
+batch_size = 32
+train_dl = DataLoader(image_dataset, batch_size=batch_size, shuffle=True)
+#%%
+def train(model, num_epochs, train_dl):
+    loss_train_hist = [0] * num_epochs  
+    acc_train_hist = [0] * num_epochs 
+
+    for epoch in range(num_epochs):
+        for x_batch, y_batch in train_dl:
+            optimiser.zero_grad()
+            pred = model(x_batch)
+            loss = loss_fn(pred, y_batch)
+
+            loss.backward()
+            optimiser.step()
+
+            loss_train_hist[epoch] = loss.item() * y_batch.size(0)
+            is_correct = (torch.argmax(pred).float() == y_batch).float()
+            acc_train_hist[epoch] += is_correct.sum()
+
+        loss_train_hist[epoch] /= len(train_dl.dataset)
+        acc_train_hist[epoch] /= len(train_dl)
+    
+    return loss_train_hist, acc_train_hist
+
+# %%
+train(model, 1, train_dl)
+# %%

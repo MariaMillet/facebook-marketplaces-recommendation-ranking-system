@@ -1,5 +1,5 @@
 from PIL import Image
-import os
+import os, fnmatch
 
 def resize_image(final_size, im):
     size = im.size
@@ -20,10 +20,19 @@ if __name__ == '__main__':
     directory_name = "cleaned_images"
     os.mkdir(directory_name)
     print("Directory " , directory_name ,  " Created ") 
-    for n, item in enumerate(dirs[:5], 1):
+    for n, item in enumerate(dirs):
+        if n % 100 == 0:
+            print(n, item)
+        if 'csv' in item:
+            continue
         im = Image.open('images/' + item)
+        #  print(item)
         new_im = resize_image(final_size, im)
-        new_im.save(f'{directory_name}/{n}_resized.jpg')
+        new_im.save(f'{directory_name}/{os.path.basename(item)}')
+        # print(f'{directory_name}/{os.path.basename(item)}')
+
+    
+    # assert len(os.listdir("images/")) == len(os.listdir("cleaned_images/"))
 
 #%%
 # from PIL import Image
@@ -52,4 +61,13 @@ if __name__ == '__main__':
 
 # # %%
 # dirs
+# %%
+# len(os.listdir("cleaned_images/"))
+path = "images/"
+dirs = os.listdir(path)
+print(dirs)
+
+# %%
+print(len(os.listdir("cleaned_images/")))
+print(len(os.listdir("images/")))
 # %%
