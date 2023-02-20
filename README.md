@@ -26,7 +26,7 @@ def resize_image(final_size, im):
 ```
 
 ## Milestone 2 - Created a classification model by fine tuning a pre-trained Resnet model
-
+- File: fb_marketplace.ipynb
 - Created a train/valid/test PyTorch Datasets from cleaned image files saved locally by passing randomly generated indices for each data split.
   - As part of the class ```get_labels``` method saved an image decoder (a dictionary mapping label to class) to pkl.
   -   The ```__getitem__``` method in the ImageDataset loads the raw content:
